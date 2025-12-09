@@ -1,5 +1,5 @@
 import React from 'react';
-import { Compass } from 'lucide-react';
+import { Compass, Code2 } from 'lucide-react';
 
 export const Header: React.FC = () => {
   return (
@@ -13,9 +13,14 @@ export const Header: React.FC = () => {
               <p className="text-xs text-indigo-600 font-medium -mt-1">بوابتك للمستقبل</p>
             </div>
           </div>
-          <nav className="flex space-x-4 space-x-reverse">
-            <span className="text-sm text-gray-500">نظام توجيه ذكي يساعد الطلاب على اختيار التخصص الجامعي المناسب</span>
-          </nav>
+          
+          <div className="hidden md:flex items-center gap-2 border-r border-gray-200 pr-4 mr-4">
+            <div className="text-left">
+              <p className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">Powered By</p>
+              <p className="text-xs font-bold text-gray-800">Black Pharaohs Code</p>
+            </div>
+            <Code2 className="w-6 h-6 text-gray-800" />
+          </div>
         </div>
       </div>
     </header>

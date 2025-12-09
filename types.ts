@@ -1,5 +1,9 @@
 export interface UserProfile {
   name: string;
+  email: string;
+  phone: string;
+  address: string;
+  schoolName: string;
   academicStrengths: string[];
   interests: string[];
   softSkills: string[];

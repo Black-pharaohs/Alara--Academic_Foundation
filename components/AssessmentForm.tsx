@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, User, BookOpen, Lightbulb, Briefcase } from 'lucide-react';
+import { Check, User, BookOpen, Lightbulb, Briefcase, Mail, Phone, MapPin, School } from 'lucide-react';
 import { UserProfile, ACADEMIC_SUBJECTS, INTERESTS, SOFT_SKILLS } from '../types';
 
 interface AssessmentFormProps {
@@ -48,6 +48,31 @@ const ToggleButton: React.FC<{
   </button>
 );
 
+const InputField: React.FC<{
+  label: string;
+  icon: React.ReactNode;
+  value: string;
+  onChange: (val: string) => void;
+  placeholder?: string;
+  type?: string;
+}> = ({ label, icon, value, onChange, placeholder, type = "text" }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+    <div className="relative">
+      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
+        {icon}
+      </div>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-right transition-shadow"
+      />
+    </div>
+  </div>
+);
+
 export const AssessmentForm: React.FC<AssessmentFormProps> = ({ data, onChange, onSubmit }) => {
   const [step, setStep] = React.useState(1);
   const totalSteps = 4;
@@ -72,7 +97,8 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({ data, onChange, 
 
   const isNextDisabled = () => {
     switch (step) {
-      case 1: return !data.name;
+      case 1: 
+        return !data.name || !data.email || !data.phone || !data.schoolName || !data.address;
       case 2: return data.academicStrengths.length === 0;
       case 3: return data.interests.length === 0;
       case 4: return !data.workPreference || !data.environmentPreference;
@@ -84,26 +110,62 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({ data, onChange, 
     <div className="max-w-3xl mx-auto px-4 py-10">
       <StepIndicator current={step} total={totalSteps} />
 
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden min-h-[400px] flex flex-col">
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden min-h-[500px] flex flex-col">
         <div className="p-8 flex-grow">
-          {/* Step 1: Basics */}
+          {/* Step 1: Registration / Basics */}
           {step === 1 && (
             <div className="space-y-6 animate-fadeIn">
-              <div className="text-center">
+              <div className="text-center mb-8">
                 <div className="mx-auto w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
                   <User className="w-6 h-6 text-indigo-600" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">لنتعرف عليك أولاً</h2>
-                <p className="text-gray-500 mt-2">أدخل اسمك لنتمكن من توجيه الحديث إليك</p>
+                <h2 className="text-2xl font-bold text-gray-900">تسجيل بيانات الطالب</h2>
+                <p className="text-gray-500 mt-2">يرجى ملء البيانات التالية لبدء عملية التحليل والتوجيه</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">الاسم</label>
-                <input
-                  type="text"
-                  value={data.name}
-                  onChange={(e) => onChange({ name: e.target.value })}
-                  placeholder="مثال: أحمد، سارة..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-right"
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="md:col-span-2">
+                  <InputField 
+                    label="الاسم الرباعي" 
+                    icon={<User className="w-5 h-5" />}
+                    value={data.name} 
+                    onChange={(v) => onChange({ name: v })}
+                    placeholder="مثال: أحمد محمد علي..."
+                  />
+                </div>
+                
+                <InputField 
+                  label="رقم الهاتف" 
+                  icon={<Phone className="w-5 h-5" />}
+                  value={data.phone} 
+                  onChange={(v) => onChange({ phone: v })}
+                  placeholder="05xxxxxxxx"
+                  type="tel"
+                />
+
+                <InputField 
+                  label="البريد الإلكتروني" 
+                  icon={<Mail className="w-5 h-5" />}
+                  value={data.email} 
+                  onChange={(v) => onChange({ email: v })}
+                  placeholder="name@example.com"
+                  type="email"
+                />
+
+                <InputField 
+                  label="اسم المدرسة" 
+                  icon={<School className="w-5 h-5" />}
+                  value={data.schoolName} 
+                  onChange={(v) => onChange({ schoolName: v })}
+                  placeholder="اسم المدرسة الثانوية..."
+                />
+
+                <InputField 
+                  label="العنوان (المدينة/الحي)" 
+                  icon={<MapPin className="w-5 h-5" />}
+                  value={data.address} 
+                  onChange={(v) => onChange({ address: v })}
+                  placeholder="الرياض - حي الملز..."
                 />
               </div>
             </div>
