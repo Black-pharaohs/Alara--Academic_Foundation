@@ -1,0 +1,266 @@
+import React from 'react';
+import { Check, User, BookOpen, Lightbulb, Briefcase } from 'lucide-react';
+import { UserProfile, ACADEMIC_SUBJECTS, INTERESTS, SOFT_SKILLS } from '../types';
+
+interface AssessmentFormProps {
+  data: UserProfile;
+  onChange: (updates: Partial<UserProfile>) => void;
+  onSubmit: () => void;
+}
+
+const StepIndicator: React.FC<{ current: number; total: number }> = ({ current, total }) => {
+  return (
+    <div className="flex items-center justify-center mb-8 w-full">
+      {Array.from({ length: total }).map((_, idx) => (
+        <React.Fragment key={idx}>
+          <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 ${
+            idx + 1 <= current 
+              ? 'bg-indigo-600 border-indigo-600 text-white' 
+              : 'bg-white border-gray-300 text-gray-400'
+          }`}>
+            {idx + 1 < current ? <Check className="w-6 h-6" /> : <span>{idx + 1}</span>}
+          </div>
+          {idx < total - 1 && (
+            <div className={`h-1 w-12 mx-2 transition-colors duration-300 ${
+              idx + 1 < current ? 'bg-indigo-600' : 'bg-gray-200'
+            }`} />
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+};
+
+const ToggleButton: React.FC<{ 
+  label: string; 
+  selected: boolean; 
+  onClick: () => void; 
+}> = ({ label, selected, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border ${
+      selected 
+        ? 'bg-indigo-100 border-indigo-500 text-indigo-700 shadow-sm' 
+        : 'bg-white border-gray-200 text-gray-600 hover:border-indigo-300 hover:bg-gray-50'
+    }`}
+  >
+    {label}
+  </button>
+);
+
+export const AssessmentForm: React.FC<AssessmentFormProps> = ({ data, onChange, onSubmit }) => {
+  const [step, setStep] = React.useState(1);
+  const totalSteps = 4;
+
+  const handleNext = () => {
+    if (step < totalSteps) setStep(step + 1);
+    else onSubmit();
+  };
+
+  const handleBack = () => {
+    if (step > 1) setStep(step - 1);
+  };
+
+  const toggleSelection = (field: keyof UserProfile, value: string) => {
+    const currentList = data[field] as string[];
+    if (currentList.includes(value)) {
+      onChange({ [field]: currentList.filter(item => item !== value) });
+    } else {
+      onChange({ [field]: [...currentList, value] });
+    }
+  };
+
+  const isNextDisabled = () => {
+    switch (step) {
+      case 1: return !data.name;
+      case 2: return data.academicStrengths.length === 0;
+      case 3: return data.interests.length === 0;
+      case 4: return !data.workPreference || !data.environmentPreference;
+      default: return false;
+    }
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-10">
+      <StepIndicator current={step} total={totalSteps} />
+
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden min-h-[400px] flex flex-col">
+        <div className="p-8 flex-grow">
+          {/* Step 1: Basics */}
+          {step === 1 && (
+            <div className="space-y-6 animate-fadeIn">
+              <div className="text-center">
+                <div className="mx-auto w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+                  <User className="w-6 h-6 text-indigo-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">لنتعرف عليك أولاً</h2>
+                <p className="text-gray-500 mt-2">أدخل اسمك لنتمكن من توجيه الحديث إليك</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">الاسم</label>
+                <input
+                  type="text"
+                  value={data.name}
+                  onChange={(e) => onChange({ name: e.target.value })}
+                  placeholder="مثال: أحمد، سارة..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-right"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Academics */}
+          {step === 2 && (
+            <div className="space-y-6 animate-fadeIn">
+              <div className="text-center">
+                <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                  <BookOpen className="w-6 h-6 text-blue-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">نقاط القوة الأكاديمية</h2>
+                <p className="text-gray-500 mt-2">ما هي المواد الدراسية التي تستمتع بها وتتفوق فيها؟</p>
+              </div>
+              <div className="flex flex-wrap gap-3 justify-center">
+                {ACADEMIC_SUBJECTS.map((subject) => (
+                  <ToggleButton
+                    key={subject}
+                    label={subject}
+                    selected={data.academicStrengths.includes(subject)}
+                    onClick={() => toggleSelection('academicStrengths', subject)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Interests & Skills */}
+          {step === 3 && (
+            <div className="space-y-8 animate-fadeIn">
+              <div className="text-center">
+                <div className="mx-auto w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+                  <Lightbulb className="w-6 h-6 text-yellow-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">الاهتمامات والمهارات</h2>
+                <p className="text-gray-500 mt-2">ماذا تحب أن تفعل وكيف تتفاعل مع العالم؟</p>
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-3">اهتماماتك</h3>
+                <div className="flex flex-wrap gap-2">
+                  {INTERESTS.map((item) => (
+                    <ToggleButton
+                      key={item}
+                      label={item}
+                      selected={data.interests.includes(item)}
+                      onClick={() => toggleSelection('interests', item)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-3">مهاراتك الشخصية</h3>
+                <div className="flex flex-wrap gap-2">
+                  {SOFT_SKILLS.map((item) => (
+                    <ToggleButton
+                      key={item}
+                      label={item}
+                      selected={data.softSkills.includes(item)}
+                      onClick={() => toggleSelection('softSkills', item)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Work Style */}
+          {step === 4 && (
+            <div className="space-y-8 animate-fadeIn">
+              <div className="text-center">
+                <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <Briefcase className="w-6 h-6 text-green-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">بيئة العمل المفضلة</h2>
+                <p className="text-gray-500 mt-2">كيف تتخيل يومك الوظيفي في المستقبل؟</p>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-gray-900">تفضيل العمل الجماعي</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  {[
+                    { val: 'team', label: 'ضمن فريق' },
+                    { val: 'solo', label: 'عمل فردي' },
+                    { val: 'mixed', label: 'مختلط' }
+                  ].map((opt) => (
+                    <button
+                      key={opt.val}
+                      onClick={() => onChange({ workPreference: opt.val as any })}
+                      className={`p-4 rounded-xl border-2 text-center transition-all ${
+                        data.workPreference === opt.val
+                          ? 'border-indigo-600 bg-indigo-50 text-indigo-700 font-bold'
+                          : 'border-gray-200 hover:border-indigo-300'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-gray-900">مكان العمل</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                   {[
+                    { val: 'office', label: 'مكتبي' },
+                    { val: 'field', label: 'ميداني' },
+                    { val: 'lab', label: 'مختبر/بحثي' },
+                    { val: 'remote', label: 'عن بعد' }
+                  ].map((opt) => (
+                    <button
+                      key={opt.val}
+                      onClick={() => onChange({ environmentPreference: opt.val as any })}
+                      className={`p-3 rounded-lg border text-sm transition-all ${
+                        data.environmentPreference === opt.val
+                          ? 'bg-green-50 border-green-500 text-green-700 font-medium'
+                          : 'bg-white border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer Navigation */}
+        <div className="bg-gray-50 px-8 py-5 flex justify-between items-center border-t border-gray-100">
+          <button
+            onClick={handleBack}
+            disabled={step === 1}
+            className={`px-6 py-2 rounded-lg text-sm font-medium ${
+              step === 1 
+                ? 'text-gray-300 cursor-not-allowed' 
+                : 'text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            السابق
+          </button>
+          
+          <button
+            onClick={handleNext}
+            disabled={isNextDisabled()}
+            className={`px-8 py-3 rounded-lg text-sm font-bold text-white shadow-md transition-all ${
+              isNextDisabled()
+                ? 'bg-gray-300 cursor-not-allowed'
+                : 'bg-indigo-600 hover:bg-indigo-700 transform hover:translate-y-[-1px]'
+            }`}
+          >
+            {step === totalSteps ? 'إنهاء وتحليل' : 'التالي'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};

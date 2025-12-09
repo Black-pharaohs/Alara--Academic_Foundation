@@ -1,0 +1,45 @@
+export interface UserProfile {
+  name: string;
+  academicStrengths: string[];
+  interests: string[];
+  softSkills: string[];
+  workPreference: 'team' | 'solo' | 'mixed' | '';
+  environmentPreference: 'office' | 'field' | 'remote' | 'lab' | '';
+}
+
+export interface MajorRecommendation {
+  id: string;
+  title: string;
+  matchScore: number;
+  description: string;
+  reasoning: string;
+  careerPaths: string[];
+  requiredSkills: string[];
+  curriculumHighlights: string[];
+}
+
+export interface AssessmentStepProps {
+  data: UserProfile;
+  updateData: (updates: Partial<UserProfile>) => void;
+  onNext: () => void;
+  onBack: () => void;
+  isLastStep?: boolean;
+}
+
+export const ACADEMIC_SUBJECTS = [
+  'الرياضيات', 'الفيزياء', 'الكيمياء', 'الأحياء', 
+  'اللغة العربية', 'اللغة الإنجليزية', 'التاريخ', 
+  'الجغرافيا', 'علوم الحاسوب', 'الفنون'
+];
+
+export const INTERESTS = [
+  'حل المشكلات', 'التصميم والرسم', 'الكتابة والقراءة', 
+  'مساعدة الآخرين', 'التكنولوجيا والبرمجة', 'بناء الأشياء', 
+  'تحليل البيانات', 'الطبيعة والبيئة', 'إدارة الأموال', 'القيادة'
+];
+
+export const SOFT_SKILLS = [
+  'التواصل الفعال', 'العمل الجماعي', 'التفكير النقدي', 
+  'الإبداع', 'إدارة الوقت', 'المرونة', 
+  'الذكاء العاطفي', 'اتخاذ القرار', 'التعلم الذاتي'
+];
