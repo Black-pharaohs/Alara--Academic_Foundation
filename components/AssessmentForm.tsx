@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import { Check, User, BookOpen, Lightbulb, Briefcase, Mail, Phone, MapPin, School } from 'lucide-react';
 import { UserProfile, ACADEMIC_SUBJECTS, INTERESTS, SOFT_SKILLS } from '../types';
 
@@ -55,7 +56,8 @@ const InputField: React.FC<{
   onChange: (val: string) => void;
   placeholder?: string;
   type?: string;
-}> = ({ label, icon, value, onChange, placeholder, type = "text" }) => (
+  readOnly?: boolean;
+}> = ({ label, icon, value, onChange, placeholder, type = "text", readOnly = false }) => (
   <div>
     <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
     <div className="relative">
@@ -67,7 +69,8 @@ const InputField: React.FC<{
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-right transition-shadow"
+        readOnly={readOnly}
+        className={`w-full pr-10 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-right transition-shadow ${readOnly ? 'bg-gray-100 text-gray-500' : ''}`}
       />
     </div>
   </div>
@@ -119,8 +122,8 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({ data, onChange, 
                 <div className="mx-auto w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
                   <User className="w-6 h-6 text-indigo-600" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">تسجيل بيانات الطالب</h2>
-                <p className="text-gray-500 mt-2">يرجى ملء البيانات التالية لبدء عملية التحليل والتوجيه</p>
+                <h2 className="text-2xl font-bold text-gray-900">بيانات الطالب</h2>
+                <p className="text-gray-500 mt-2">يرجى تأكيد البيانات التالية لبدء عملية التحليل</p>
               </div>
               
               <div className="grid md:grid-cols-2 gap-6">
@@ -131,6 +134,8 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({ data, onChange, 
                     value={data.name} 
                     onChange={(v) => onChange({ name: v })}
                     placeholder="مثال: أحمد محمد علي..."
+                    // If user is logged in, email is the key, so name might be editable but email fixed? 
+                    // Let's keep editable for flexibility in this assessment context
                   />
                 </div>
                 
@@ -150,6 +155,7 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({ data, onChange, 
                   onChange={(v) => onChange({ email: v })}
                   placeholder="name@example.com"
                   type="email"
+                  readOnly={!!data.userId} // Read only if logged in
                 />
 
                 <InputField 

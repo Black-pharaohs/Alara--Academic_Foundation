@@ -1,4 +1,16 @@
+
+export type UserRole = 'student' | 'admin' | 'owner';
+
+export interface AuthUser {
+  id: string;
+  username: string; // email for students, username for admins
+  name: string;
+  role: UserRole;
+  createdAt: string;
+}
+
 export interface UserProfile {
+  userId?: string; // Link to AuthUser if logged in
   name: string;
   email: string;
   phone: string;

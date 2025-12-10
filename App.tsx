@@ -1,10 +1,15 @@
-import React, { useState, useCallback } from 'react';
+
+import React, { useState, useCallback, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { AssessmentForm } from './components/AssessmentForm';
 import { ResultsDashboard } from './components/ResultsDashboard';
-import { UserProfile, MajorRecommendation } from './types';
+import { AdminDashboard } from './components/AdminDashboard';
+import { AuthModal } from './components/AuthModal';
+import { StudentProfile } from './components/StudentProfile';
+import { UserProfile, MajorRecommendation, AuthUser } from './types';
 import { generateRecommendations } from './services/gemini';
+import { saveSubmission } from './services/storage';
 import { Loader2, Code2, MapPin, Mail, Globe } from 'lucide-react';
 
 // Initial empty state
@@ -22,12 +27,32 @@ const initialUserProfile: UserProfile = {
 };
 
 function App() {
-  const [view, setView] = useState<'hero' | 'assessment' | 'loading' | 'results'>('hero');
+  const [view, setView] = useState<'hero' | 'assessment' | 'loading' | 'results' | 'admin' | 'student-profile'>('hero');
   const [userProfile, setUserProfile] = useState<UserProfile>(initialUserProfile);
   const [recommendations, setRecommendations] = useState<MajorRecommendation[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  // Auth State
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // Check for session (simple persistence via memory, in real app check token)
+  useEffect(() => {
+    // If we wanted session persistence across reloads, we'd check localStorage here
+    // keeping it simple per request scope
+  }, []);
+
   const handleStart = () => {
+    // If student is logged in, pre-fill data
+    if (currentUser && currentUser.role === 'student') {
+        setUserProfile(prev => ({
+            ...prev,
+            userId: currentUser.id,
+            name: currentUser.name,
+            email: currentUser.username,
+            phone: (currentUser as any).phone || '',
+        }));
+    }
     setView('assessment');
     window.scrollTo(0, 0);
   };
@@ -42,28 +67,87 @@ function App() {
     try {
       const results = await generateRecommendations(userProfile);
       setRecommendations(results);
+      
+      // Save data automatically
+      // Ensure user ID is attached if logged in
+      const profileToSave = currentUser ? { ...userProfile, userId: currentUser.id } : userProfile;
+      saveSubmission(profileToSave, results);
+      
       setView('results');
     } catch (err) {
       console.error(err);
       setError("حدث خطأ أثناء تحليل البيانات. يرجى المحاولة مرة أخرى.");
-      setView('assessment'); // Go back to assessment on error so they don't lose data
+      setView('assessment'); 
     }
   };
 
   const handleRestart = () => {
-    setUserProfile(initialUserProfile);
+    // Keep user info if logged in, otherwise reset
+    if (currentUser && currentUser.role === 'student') {
+         setUserProfile({
+            ...initialUserProfile,
+            userId: currentUser.id,
+            name: currentUser.name,
+            email: currentUser.username,
+            phone: (currentUser as any).phone || '',
+         });
+    } else {
+        setUserProfile(initialUserProfile);
+    }
     setRecommendations([]);
     setView('hero');
     window.scrollTo(0, 0);
   };
 
+  // Auth Handlers
+  const handleLogin = (user: AuthUser) => {
+    setCurrentUser(user);
+    if (user.role === 'admin' || user.role === 'owner') {
+      setView('admin');
+    } else {
+      setView('hero');
+    }
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setUserProfile(initialUserProfile);
+    setView('hero');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans flex flex-col" dir="rtl">
-      <Header />
+      <Header 
+        currentUser={currentUser}
+        onLoginClick={() => setIsAuthModalOpen(true)}
+        onLogoutClick={handleLogout}
+        onProfileClick={() => setView('student-profile')}
+        onAdminDashboardClick={() => setView('admin')}
+      />
       
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+        onLogin={handleLogin}
+      />
+
       <main className="flex-grow">
         {view === 'hero' && (
           <Hero onStart={handleStart} />
+        )}
+
+        {view === 'admin' && currentUser && (currentUser.role === 'admin' || currentUser.role === 'owner') && (
+          <AdminDashboard 
+            currentUser={currentUser} 
+            onLogout={handleLogout} 
+          />
+        )}
+
+        {view === 'student-profile' && currentUser && (
+          <StudentProfile 
+            user={currentUser} 
+            onBack={() => setView('hero')} 
+          />
         )}
 
         {view === 'assessment' && (
@@ -110,52 +194,54 @@ function App() {
         )}
       </main>
 
-      <footer className="bg-slate-900 text-slate-300 border-t border-slate-800 mt-20">
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            
-            {/* Company Info */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-indigo-600 rounded-lg">
-                  <Code2 className="w-8 h-8 text-white" />
+      {view !== 'admin' && view !== 'student-profile' && (
+        <footer className="bg-slate-900 text-slate-300 border-t border-slate-800 mt-20">
+          <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+              
+              {/* Company Info */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-indigo-600 rounded-lg">
+                    <Code2 className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white">Black Pharaohs Code</h3>
+                    <p className="text-sm text-indigo-400 font-medium">شركة بلاك فاروز كود البرمجية</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-white">Black Pharaohs Code</h3>
-                  <p className="text-sm text-indigo-400 font-medium">شركة بلاك فاروز كود البرمجية</p>
-                </div>
+                <p className="text-base leading-relaxed max-w-md text-slate-400">
+                  شركة برمجية رائدة متخصصة في تطوير الحلول التقنية المبتكرة والأنظمة التعليمية الذكية. 
+                  نحن نؤمن بقوة التكنولوجيا في رسم مستقبل أفضل للطلاب وتمكينهم من تحقيق أهدافهم الأكاديمية والمهنية.
+                </p>
               </div>
-              <p className="text-base leading-relaxed max-w-md text-slate-400">
-                شركة برمجية رائدة متخصصة في تطوير الحلول التقنية المبتكرة والأنظمة التعليمية الذكية. 
-                نحن نؤمن بقوة التكنولوجيا في رسم مستقبل أفضل للطلاب وتمكينهم من تحقيق أهدافهم الأكاديمية والمهنية.
-              </p>
-            </div>
 
-            {/* Contact / Links */}
-            <div className="md:border-r md:border-slate-800 md:pr-12 space-y-6">
-              <h4 className="text-lg font-bold text-white">تواصل معنا</h4>
-              <ul className="space-y-4">
-                <li className="flex items-center gap-3">
-                  <MapPin className="w-5 h-5 text-indigo-500" />
-                  <span>الخرطوم، السودان - المقر الرئيسي</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Mail className="w-5 h-5 text-indigo-500" />
-                  <span>contact@blackpharaohs.code</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Globe className="w-5 h-5 text-indigo-500" />
-                  <span>www.blackpharaohs-code.com</span>
-                </li>
-              </ul>
+              {/* Contact / Links */}
+              <div className="md:border-r md:border-slate-800 md:pr-12 space-y-6">
+                <h4 className="text-lg font-bold text-white">تواصل معنا</h4>
+                <ul className="space-y-4">
+                  <li className="flex items-center gap-3">
+                    <MapPin className="w-5 h-5 text-indigo-500" />
+                    <span>الخرطوم، السودان - المقر الرئيسي</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Mail className="w-5 h-5 text-indigo-500" />
+                    <span>contact@blackpharaohs.code</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <Globe className="w-5 h-5 text-indigo-500" />
+                    <span>www.blackpharaohs-code.com</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="mt-12 pt-8 border-t border-slate-800 text-center text-sm text-slate-500">
+              © {new Date().getFullYear()} مساري - جميع الحقوق محفوظة لشركة Black Pharaohs Code.
             </div>
           </div>
-          
-          <div className="mt-12 pt-8 border-t border-slate-800 text-center text-sm text-slate-500">
-            © {new Date().getFullYear()} مساري - جميع الحقوق محفوظة لشركة Black Pharaohs Code.
-          </div>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 }
