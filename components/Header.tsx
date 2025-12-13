@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Compass, Code2, UserCircle, LogOut, LogIn } from 'lucide-react';
 import { AuthUser } from '../types';
@@ -25,8 +24,8 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center cursor-pointer" onClick={() => window.location.href = '/'}>
             <Compass className="h-8 w-8 text-indigo-600 ml-3" />
             <div>
-              <h1 className="text-xl font-bold text-gray-900">مساري</h1>
-              <p className="text-xs text-indigo-600 font-medium -mt-1">بوابتك للمستقبل</p>
+              <h1 className="text-xl font-bold text-gray-900">ألارا</h1>
+              <p className="text-xs text-indigo-600 font-medium -mt-1">تأسيس المعرفة</p>
             </div>
           </div>
           

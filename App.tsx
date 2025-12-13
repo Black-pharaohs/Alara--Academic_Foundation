@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
@@ -237,7 +236,7 @@ function App() {
             </div>
             
             <div className="mt-12 pt-8 border-t border-slate-800 text-center text-sm text-slate-500">
-              © {new Date().getFullYear()} مساري - جميع الحقوق محفوظة لشركة Black Pharaohs Code.
+              © {new Date().getFullYear()} ألارا - جميع الحقوق محفوظة لشركة Black Pharaohs Code.
             </div>
           </div>
         </footer>

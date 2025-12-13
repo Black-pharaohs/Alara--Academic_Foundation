@@ -13,25 +13,25 @@ export const Hero: React.FC<HeroProps> = ({ onStart }) => {
           <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
             <div className="sm:text-center lg:text-right">
               <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                <span className="block xl:inline">اكتشف تخصصك الجامعي</span>{' '}
-                <span className="block text-indigo-600 xl:inline">بذكاء ودقة</span>
+                <span className="block xl:inline">ألارا.. التأسيس الراسخ</span>{' '}
+                <span className="block text-indigo-600 xl:inline">لمستقبلك المعرفي</span>
               </h1>
               <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                نستخدم خوارزميات الذكاء الاصطناعي المتقدمة لتحليل مهاراتك واهتماماتك، لنقدم لك توصيات مدروسة لمسارك الأكاديمي والمهني المستقبلي.
+                مستوحى من إرث الملك "ألارا" مؤسس مملكة نبتة العظيمة، نساعدك هنا على وضع حجر الأساس لمسيرتك الأكاديمية. نستخدم أحدث تقنيات الذكاء الاصطناعي لتحليل بنائك المعرفي وقدراتك، لنرسم لك مساراً جامعياً ومهنياً يقوم على قواعد ثابتة.
               </p>
               
               <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3 text-center sm:text-right">
                  <div className="flex items-center gap-2 text-gray-600">
                     <Brain className="w-5 h-5 text-indigo-500" />
-                    <span>تحليل الشخصية</span>
+                    <span>البناء المعرفي</span>
                  </div>
                  <div className="flex items-center gap-2 text-gray-600">
                     <Target className="w-5 h-5 text-indigo-500" />
-                    <span>توافق المسار</span>
+                    <span>دقة التوجيه</span>
                  </div>
                  <div className="flex items-center gap-2 text-gray-600">
                     <ShieldCheck className="w-5 h-5 text-indigo-500" />
-                    <span>خصوصية تامة</span>
+                    <span>خصوصية وأمان</span>
                  </div>
               </div>
 
@@ -41,7 +41,7 @@ export const Hero: React.FC<HeroProps> = ({ onStart }) => {
                     onClick={onStart}
                     className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10 transition-all transform hover:scale-105"
                   >
-                    ابدأ التقييم الآن
+                    ابدأ تأسيس مسارك
                     <ArrowLeft className="mr-2 w-5 h-5" />
                   </button>
                 </div>
