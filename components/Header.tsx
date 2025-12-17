@@ -1,5 +1,6 @@
 import React from 'react';
-import { Compass, Code2, UserCircle, LogOut, LogIn } from 'lucide-react';
+import { Code2, UserCircle, LogOut, LogIn } from 'lucide-react';
+import { PyramidIcon } from './Icons';
 import { AuthUser } from '../types';
 
 interface HeaderProps {
@@ -21,8 +22,10 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="bg-white shadow-sm sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center cursor-pointer" onClick={() => window.location.href = '/'}>
-            <Compass className="h-8 w-8 text-indigo-600 ml-3" />
+          <div className="flex items-center cursor-pointer group" onClick={() => window.location.href = '/'}>
+            <div className="bg-indigo-50 p-2 rounded-lg ml-3 group-hover:bg-indigo-100 transition-colors">
+              <PyramidIcon className="h-8 w-8 text-indigo-600" />
+            </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900">ألارا</h1>
               <p className="text-xs text-indigo-600 font-medium -mt-1">تأسيس المعرفة</p>

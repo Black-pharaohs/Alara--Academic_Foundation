@@ -1,5 +1,6 @@
 import React from 'react';
-import { ArrowLeft, Brain, Target, ShieldCheck } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { AnkhIcon, EyeOfHorusIcon, PyramidIcon } from './Icons';
 
 interface HeroProps {
   onStart: () => void;
@@ -21,17 +22,17 @@ export const Hero: React.FC<HeroProps> = ({ onStart }) => {
               </p>
               
               <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3 text-center sm:text-right">
-                 <div className="flex items-center gap-2 text-gray-600">
-                    <Brain className="w-5 h-5 text-indigo-500" />
-                    <span>البناء المعرفي</span>
+                 <div className="flex items-center gap-2 text-gray-600 p-3 bg-indigo-50 rounded-lg border border-indigo-100 hover:shadow-sm transition-all">
+                    <PyramidIcon className="w-6 h-6 text-indigo-600" />
+                    <span className="font-semibold">تأسيس متين</span>
                  </div>
-                 <div className="flex items-center gap-2 text-gray-600">
-                    <Target className="w-5 h-5 text-indigo-500" />
-                    <span>دقة التوجيه</span>
+                 <div className="flex items-center gap-2 text-gray-600 p-3 bg-indigo-50 rounded-lg border border-indigo-100 hover:shadow-sm transition-all">
+                    <EyeOfHorusIcon className="w-6 h-6 text-indigo-600" />
+                    <span className="font-semibold">رؤية ثاقبة</span>
                  </div>
-                 <div className="flex items-center gap-2 text-gray-600">
-                    <ShieldCheck className="w-5 h-5 text-indigo-500" />
-                    <span>خصوصية وأمان</span>
+                 <div className="flex items-center gap-2 text-gray-600 p-3 bg-indigo-50 rounded-lg border border-indigo-100 hover:shadow-sm transition-all">
+                    <AnkhIcon className="w-6 h-6 text-indigo-600" />
+                    <span className="font-semibold">حياة مهنية</span>
                  </div>
               </div>
 

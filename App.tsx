@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
@@ -9,6 +10,7 @@ import { StudentProfile } from './components/StudentProfile';
 import { UserProfile, MajorRecommendation, AuthUser } from './types';
 import { generateRecommendations } from './services/gemini';
 import { saveSubmission } from './services/storage';
+import { initDB } from './services/db';
 import { Loader2, Code2, MapPin, Mail, Globe } from 'lucide-react';
 
 // Initial empty state
@@ -35,10 +37,12 @@ function App() {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-  // Check for session (simple persistence via memory, in real app check token)
+  // Initialize DB and Check Session
   useEffect(() => {
-    // If we wanted session persistence across reloads, we'd check localStorage here
-    // keeping it simple per request scope
+    const initApp = async () => {
+      await initDB();
+    };
+    initApp();
   }, []);
 
   const handleStart = () => {
@@ -49,7 +53,7 @@ function App() {
             userId: currentUser.id,
             name: currentUser.name,
             email: currentUser.username,
-            phone: (currentUser as any).phone || '',
+            phone: currentUser.phone || '',
         }));
     }
     setView('assessment');
@@ -88,7 +92,7 @@ function App() {
             userId: currentUser.id,
             name: currentUser.name,
             email: currentUser.username,
-            phone: (currentUser as any).phone || '',
+            phone: currentUser.phone || '',
          });
     } else {
         setUserProfile(initialUserProfile);
@@ -112,6 +116,10 @@ function App() {
     setCurrentUser(null);
     setUserProfile(initialUserProfile);
     setView('hero');
+  };
+
+  const handleUserUpdate = (updatedUser: AuthUser) => {
+    setCurrentUser(updatedUser);
   };
 
   return (
@@ -146,6 +154,7 @@ function App() {
           <StudentProfile 
             user={currentUser} 
             onBack={() => setView('hero')} 
+            onUpdate={handleUserUpdate}
           />
         )}
 

@@ -1,6 +1,6 @@
 
-import React, { useEffect } from 'react';
-import { Check, User, BookOpen, Lightbulb, Briefcase, Mail, Phone, MapPin, School } from 'lucide-react';
+import React, { useState } from 'react';
+import { Check, User, BookOpen, Lightbulb, Briefcase, Mail, Phone, MapPin, School, AlertCircle } from 'lucide-react';
 import { UserProfile, ACADEMIC_SUBJECTS, INTERESTS, SOFT_SKILLS } from '../types';
 
 interface AssessmentFormProps {
@@ -57,7 +57,8 @@ const InputField: React.FC<{
   placeholder?: string;
   type?: string;
   readOnly?: boolean;
-}> = ({ label, icon, value, onChange, placeholder, type = "text", readOnly = false }) => (
+  error?: string;
+}> = ({ label, icon, value, onChange, placeholder, type = "text", readOnly = false, error }) => (
   <div>
     <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
     <div className="relative">
@@ -70,17 +71,47 @@ const InputField: React.FC<{
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         readOnly={readOnly}
-        className={`w-full pr-10 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-right transition-shadow ${readOnly ? 'bg-gray-100 text-gray-500' : ''}`}
+        className={`w-full pr-10 pl-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-right transition-shadow ${
+          readOnly ? 'bg-gray-100 text-gray-500' : ''
+        } ${error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
       />
     </div>
+    {error && (
+      <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+        <AlertCircle className="w-3 h-3" />
+        {error}
+      </p>
+    )}
   </div>
 );
 
 export const AssessmentForm: React.FC<AssessmentFormProps> = ({ data, onChange, onSubmit }) => {
-  const [step, setStep] = React.useState(1);
+  const [step, setStep] = useState(1);
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
   const totalSteps = 4;
 
+  const validateStep1 = () => {
+    const newErrors: {[key: string]: string} = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Regex for typical mobile numbers (e.g., 10 digits starting with 05 in SA/SD or similar)
+    // Making it generic: starts with 0, 9-14 digits
+    const phoneRegex = /^0\d{8,14}$/;
+
+    if (!data.name || data.name.length < 3) newErrors.name = "الاسم يجب أن يكون 3 أحرف على الأقل";
+    if (!data.email || !emailRegex.test(data.email)) newErrors.email = "يرجى إدخال بريد إلكتروني صحيح";
+    if (!data.phone || !phoneRegex.test(data.phone)) newErrors.phone = "يرجى إدخال رقم هاتف صحيح (يبدأ بـ 0)";
+    if (!data.schoolName) newErrors.schoolName = "اسم المدرسة مطلوب";
+    if (!data.address) newErrors.address = "العنوان مطلوب";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleNext = () => {
+    if (step === 1) {
+      if (!validateStep1()) return;
+    }
+    
     if (step < totalSteps) setStep(step + 1);
     else onSubmit();
   };
@@ -100,8 +131,6 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({ data, onChange, 
 
   const isNextDisabled = () => {
     switch (step) {
-      case 1: 
-        return !data.name || !data.email || !data.phone || !data.schoolName || !data.address;
       case 2: return data.academicStrengths.length === 0;
       case 3: return data.interests.length === 0;
       case 4: return !data.workPreference || !data.environmentPreference;
@@ -132,10 +161,12 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({ data, onChange, 
                     label="الاسم الرباعي" 
                     icon={<User className="w-5 h-5" />}
                     value={data.name} 
-                    onChange={(v) => onChange({ name: v })}
+                    onChange={(v) => {
+                      onChange({ name: v });
+                      if (errors.name) setErrors({...errors, name: ''});
+                    }}
                     placeholder="مثال: أحمد محمد علي..."
-                    // If user is logged in, email is the key, so name might be editable but email fixed? 
-                    // Let's keep editable for flexibility in this assessment context
+                    error={errors.name}
                   />
                 </div>
                 
@@ -143,35 +174,51 @@ export const AssessmentForm: React.FC<AssessmentFormProps> = ({ data, onChange, 
                   label="رقم الهاتف" 
                   icon={<Phone className="w-5 h-5" />}
                   value={data.phone} 
-                  onChange={(v) => onChange({ phone: v })}
+                  onChange={(v) => {
+                    onChange({ phone: v });
+                    if (errors.phone) setErrors({...errors, phone: ''});
+                  }}
                   placeholder="05xxxxxxxx"
                   type="tel"
+                  error={errors.phone}
                 />
 
                 <InputField 
                   label="البريد الإلكتروني" 
                   icon={<Mail className="w-5 h-5" />}
                   value={data.email} 
-                  onChange={(v) => onChange({ email: v })}
+                  onChange={(v) => {
+                    onChange({ email: v });
+                    if (errors.email) setErrors({...errors, email: ''});
+                  }}
                   placeholder="name@example.com"
                   type="email"
-                  readOnly={!!data.userId} // Read only if logged in
+                  readOnly={!!data.userId}
+                  error={errors.email}
                 />
 
                 <InputField 
                   label="اسم المدرسة" 
                   icon={<School className="w-5 h-5" />}
                   value={data.schoolName} 
-                  onChange={(v) => onChange({ schoolName: v })}
+                  onChange={(v) => {
+                    onChange({ schoolName: v });
+                    if (errors.schoolName) setErrors({...errors, schoolName: ''});
+                  }}
                   placeholder="اسم المدرسة الثانوية..."
+                  error={errors.schoolName}
                 />
 
                 <InputField 
                   label="العنوان (المدينة/الحي)" 
                   icon={<MapPin className="w-5 h-5" />}
                   value={data.address} 
-                  onChange={(v) => onChange({ address: v })}
+                  onChange={(v) => {
+                    onChange({ address: v });
+                    if (errors.address) setErrors({...errors, address: ''});
+                  }}
                   placeholder="الرياض - حي الملز..."
+                  error={errors.address}
                 />
               </div>
             </div>

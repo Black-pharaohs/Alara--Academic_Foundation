@@ -7,6 +7,7 @@ export interface AuthUser {
   name: string;
   role: UserRole;
   createdAt: string;
+  phone?: string;
 }
 
 export interface UserProfile {

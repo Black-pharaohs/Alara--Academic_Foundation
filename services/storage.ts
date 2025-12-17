@@ -1,7 +1,7 @@
 import { UserProfile, MajorRecommendation } from '../types';
+import { executeRun, runQuery } from './db';
 
-const STORAGE_KEY = 'masari_submissions';
-const ADMIN_PASSWORD = 'admin'; // For demonstration purposes
+// Fallback logic handled within db.ts (persisting SQLite binary to localstorage)
 
 export interface Submission {
   id: string;
@@ -13,18 +13,37 @@ export interface Submission {
 
 export const saveSubmission = (profile: UserProfile, recommendations: MajorRecommendation[]) => {
   try {
-    const submissions = getSubmissions();
-    const newSubmission: Submission = {
-      id: Date.now().toString(),
-      date: new Date().toISOString(),
-      profile,
-      topMajor: recommendations[0]?.title || 'غير محدد',
-      matchScore: recommendations[0]?.matchScore || 0
-    };
-    
-    submissions.push(newSubmission);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(submissions));
-    console.log('Submission saved successfully');
+    const id = Date.now().toString();
+    const date = new Date().toISOString();
+    const topMajor = recommendations[0]?.title || 'غير محدد';
+    const matchScore = recommendations[0]?.matchScore || 0;
+
+    // Use SQLite Insert
+    executeRun(`
+      INSERT INTO submissions (
+        id, user_id, date, student_name, email, phone, school_name, address,
+        academic_strengths, interests, soft_skills, work_preference, env_preference,
+        top_major, match_score
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      id,
+      profile.userId || null,
+      date,
+      profile.name,
+      profile.email,
+      profile.phone,
+      profile.schoolName,
+      profile.address,
+      JSON.stringify(profile.academicStrengths),
+      JSON.stringify(profile.interests),
+      JSON.stringify(profile.softSkills),
+      profile.workPreference,
+      profile.environmentPreference,
+      topMajor,
+      matchScore
+    ]);
+
+    console.log('Submission saved successfully to SQLite');
   } catch (error) {
     console.error('Failed to save submission:', error);
   }
@@ -32,8 +51,27 @@ export const saveSubmission = (profile: UserProfile, recommendations: MajorRecom
 
 export const getSubmissions = (): Submission[] => {
   try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+    const rows = runQuery(`SELECT * FROM submissions ORDER BY date DESC`);
+    
+    return rows.map((row: any) => ({
+      id: row.id,
+      date: row.date,
+      topMajor: row.top_major,
+      matchScore: row.match_score,
+      profile: {
+        userId: row.user_id,
+        name: row.student_name,
+        email: row.email,
+        phone: row.phone,
+        schoolName: row.school_name,
+        address: row.address,
+        academicStrengths: JSON.parse(row.academic_strengths || '[]'),
+        interests: JSON.parse(row.interests || '[]'),
+        softSkills: JSON.parse(row.soft_skills || '[]'),
+        workPreference: row.work_preference,
+        environmentPreference: row.env_preference
+      }
+    }));
   } catch (error) {
     console.error('Failed to load submissions:', error);
     return [];
@@ -41,9 +79,5 @@ export const getSubmissions = (): Submission[] => {
 };
 
 export const clearSubmissions = () => {
-  localStorage.removeItem(STORAGE_KEY);
-};
-
-export const checkAdminPassword = (password: string): boolean => {
-  return password === ADMIN_PASSWORD;
+  executeRun(`DELETE FROM submissions`);
 };
