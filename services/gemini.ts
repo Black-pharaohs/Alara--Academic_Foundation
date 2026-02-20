@@ -26,18 +26,28 @@ export const generateRecommendations = async (profile: UserProfile): Promise<Maj
     قم بالتحليل بناءً على نقاط القوة الأكاديمية، والاهتمامات، والمهارات الشخصية، وتفضيلات بيئة العمل.
     يجب أن تكون التوصيات واقعية ومبنية على التوافق النفسي والعملي.
     قم بتوفير التفاصيل باللغة العربية الفصحى السهلة والمشجعة.
+    بالنسبة لكل تخصص، اقترح 3 جامعات متميزة في تدريس هذا المجال، مع التركيز على الجامعات في المملكة العربية السعودية والمنطقة العربية بشكل أساسي.
   `;
 
   const prompt = `
     تحليل ملف الطالب التالي:
     - الاسم: ${profile.name}
+<<<<<<< HEAD
     - نقاط القوة الأكاديمية: ${profile.academicStrengths.join(', ') || 'غير محدد'}
     - الاهتمامات: ${profile.interests.join(', ') || 'غير محدد'}
     - المهارات الشخصية: ${profile.softSkills.join(', ') || 'غير محدد'}
     - تفضيل العمل: ${profile.workPreference === 'team' ? 'ضمن فريق' : profile.workPreference === 'solo' ? 'فردي' : profile.workPreference || 'مختلط'}
     - بيئة العمل المفضلة: ${profile.environmentPreference || 'غير محدد'}
+=======
+    - نقاط القوة الأكاديمية: ${profile.academicStrengths.join(', ')}
+    - الاهتمامات: ${profile.interests.join(', ')}
+    - المهارات الشخصية: ${profile.softSkills.join(', ')}
+    - تفضيل العمل: ${profile.workPreference === 'team' ? 'ضمن فريق' : profile.workPreference === 'solo' ? 'فردي' : 'مختلط'}
+    - بيئة العمل المفضلة: ${profile.environmentPreference}
+    - المنطقة/العنوان: ${profile.address}
+>>>>>>> a03b95d39fa86a01899613802996092e0791e137
 
-    قدم 5 توصيات لتخصصات جامعية.
+    قدم 3 توصيات لتخصصات جامعية، واذكر أفضل الجامعات لدراستها.
   `;
 
   try {
@@ -71,9 +81,21 @@ export const generateRecommendations = async (profile: UserProfile): Promise<Maj
                 type: Type.ARRAY,
                 items: { type: Type.STRING },
                 description: "أبرز المواد الدراسية في هذا التخصص"
+              },
+              topUniversities: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    name: { type: Type.STRING, description: "اسم الجامعة" },
+                    location: { type: Type.STRING, description: "المدينة/الدولة" },
+                    type: { type: Type.STRING, description: "نوع الجامعة (حكومية/خاصة)" }
+                  }
+                },
+                description: "قائمة بأفضل 3 جامعات لدراسة هذا التخصص في المنطقة"
               }
             },
-            required: ["id", "title", "matchScore", "description", "reasoning", "careerPaths", "requiredSkills", "curriculumHighlights"]
+            required: ["id", "title", "matchScore", "description", "reasoning", "careerPaths", "requiredSkills", "curriculumHighlights", "topUniversities"]
           }
         }
       }

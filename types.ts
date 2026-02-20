@@ -24,6 +24,12 @@ export interface UserProfile {
   environmentPreference: 'office' | 'field' | 'remote' | 'lab' | '';
 }
 
+export interface UniversityRecommendation {
+  name: string;
+  location: string;
+  type: string; // e.g. "حكومية", "خاصة"
+}
+
 export interface MajorRecommendation {
   id: string;
   title: string;
@@ -33,6 +39,7 @@ export interface MajorRecommendation {
   careerPaths: string[];
   requiredSkills: string[];
   curriculumHighlights: string[];
+  topUniversities: UniversityRecommendation[];
 }
 
 export interface AssessmentStepProps {

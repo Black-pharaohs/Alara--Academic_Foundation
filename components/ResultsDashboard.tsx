@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer 
 } from 'recharts';
 import { MajorRecommendation, UserProfile } from '../types';
-import { ChevronDown, ChevronUp, GraduationCap, Briefcase, Star, Info, LayoutDashboard } from 'lucide-react';
+import { ChevronDown, ChevronUp, GraduationCap, Briefcase, Star, Info, LayoutDashboard, Building2, MapPin } from 'lucide-react';
 
 interface ResultsDashboardProps {
   user: UserProfile;
@@ -53,7 +53,7 @@ const MajorCard: React.FC<{
             <p className="text-indigo-800 text-sm leading-relaxed">{rec.reasoning}</p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-6 mb-6">
             <div>
               <h4 className="flex items-center gap-2 font-bold text-gray-900 mb-3">
                 <Briefcase className="w-4 h-4 text-gray-500" />
@@ -84,7 +84,7 @@ const MajorCard: React.FC<{
             </div>
           </div>
 
-          <div className="mt-6">
+          <div className="mb-6">
             <h4 className="flex items-center gap-2 font-bold text-gray-900 mb-3">
               <GraduationCap className="w-4 h-4 text-gray-500" />
               أبرز مواد المنهج
@@ -97,6 +97,32 @@ const MajorCard: React.FC<{
                 ))}
             </div>
           </div>
+
+          {/* New Universities Section */}
+          <div className="mt-6 border-t border-gray-200 pt-6">
+             <h4 className="flex items-center gap-2 font-bold text-gray-900 mb-4">
+               <Building2 className="w-4 h-4 text-gray-500" />
+               جامعات مقترحة لدراسة التخصص
+             </h4>
+             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+               {rec.topUniversities && rec.topUniversities.map((uni, idx) => (
+                 <div key={idx} className="bg-white p-3 rounded-lg border border-gray-200 hover:border-indigo-300 transition-colors">
+                    <h5 className="font-bold text-sm text-gray-800 mb-1">{uni.name}</h5>
+                    <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
+                       <span className="flex items-center gap-1">
+                         <MapPin className="w-3 h-3" />
+                         {uni.location}
+                       </span>
+                       <span className="bg-gray-100 px-2 py-0.5 rounded text-[10px]">{uni.type}</span>
+                    </div>
+                 </div>
+               ))}
+               {(!rec.topUniversities || rec.topUniversities.length === 0) && (
+                 <p className="text-sm text-gray-500 col-span-3">جاري تحديث قائمة الجامعات...</p>
+               )}
+             </div>
+          </div>
+
         </div>
       )}
     </div>
