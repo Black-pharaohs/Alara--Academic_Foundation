@@ -22,7 +22,7 @@ export const generateRecommendations = async (profile: UserProfile): Promise<Maj
   const model = "gemini-2.5-flash";
 
   const systemInstruction = `
-    أنت مستشار أكاديمي خبير وموجه مهني. مهمتك هي تحليل ملف الطالب واقتراح أفضل 3 تخصصات جامعية مناسبة له.
+    أنت مستشار أكاديمي خبير وموجه مهني. مهمتك هي تحليل ملف الطالب واقتراح أفضل 5 تخصصات جامعية مناسبة له.
     قم بالتحليل بناءً على نقاط القوة الأكاديمية، والاهتمامات، والمهارات الشخصية، وتفضيلات بيئة العمل.
     يجب أن تكون التوصيات واقعية ومبنية على التوافق النفسي والعملي.
     قم بتوفير التفاصيل باللغة العربية الفصحى السهلة والمشجعة.
@@ -32,22 +32,14 @@ export const generateRecommendations = async (profile: UserProfile): Promise<Maj
   const prompt = `
     تحليل ملف الطالب التالي:
     - الاسم: ${profile.name}
-<<<<<<< HEAD
-    - نقاط القوة الأكاديمية: ${profile.academicStrengths.join(', ') || 'غير محدد'}
-    - الاهتمامات: ${profile.interests.join(', ') || 'غير محدد'}
-    - المهارات الشخصية: ${profile.softSkills.join(', ') || 'غير محدد'}
-    - تفضيل العمل: ${profile.workPreference === 'team' ? 'ضمن فريق' : profile.workPreference === 'solo' ? 'فردي' : profile.workPreference || 'مختلط'}
-    - بيئة العمل المفضلة: ${profile.environmentPreference || 'غير محدد'}
-=======
     - نقاط القوة الأكاديمية: ${profile.academicStrengths.join(', ')}
     - الاهتمامات: ${profile.interests.join(', ')}
     - المهارات الشخصية: ${profile.softSkills.join(', ')}
     - تفضيل العمل: ${profile.workPreference === 'team' ? 'ضمن فريق' : profile.workPreference === 'solo' ? 'فردي' : 'مختلط'}
     - بيئة العمل المفضلة: ${profile.environmentPreference}
     - المنطقة/العنوان: ${profile.address}
->>>>>>> a03b95d39fa86a01899613802996092e0791e137
 
-    قدم 3 توصيات لتخصصات جامعية، واذكر أفضل الجامعات لدراستها.
+    قدم 5 توصيات لتخصصات جامعية، واذكر أفضل الجامعات لدراستها.
   `;
 
   try {
@@ -92,7 +84,7 @@ export const generateRecommendations = async (profile: UserProfile): Promise<Maj
                     type: { type: Type.STRING, description: "نوع الجامعة (حكومية/خاصة)" }
                   }
                 },
-                description: "قائمة بأفضل 3 جامعات لدراسة هذا التخصص في المنطقة"
+                description: "قائمة بأفضل 5 جامعات لدراسة هذا التخصص في المنطقة"
               }
             },
             required: ["id", "title", "matchScore", "description", "reasoning", "careerPaths", "requiredSkills", "curriculumHighlights", "topUniversities"]

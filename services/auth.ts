@@ -9,7 +9,7 @@ const initAuth = () => {
     executeRun(`
       INSERT INTO users (id, username, password, name, role, created_at)
       VALUES (?, ?, ?, ?, ?, ?)
-    `, ['owner-1', 'admin', 'admin123', 'مدير النظام', 'owner', new Date().toISOString()]);
+    `, ['owner-1', 'admin', '11235@Admin', 'مدير النظام', 'owner', new Date().toISOString()]);
   }
 };
 
