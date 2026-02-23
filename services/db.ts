@@ -29,17 +29,17 @@ export const initDB = async () => {
         const loaded = await tryLoadDBFromDisk(SQLNode);
         if (loaded) {
           db = loaded;
-          console.log('SQLite DB loaded from disk');
+          console.log('[DB] Loaded existing database from disk');
           return db;
         }
         // else create new DB using SQLNode
         db = new SQLNode.Database();
-        initTables();
+        await initTables();
         await saveDBToDisk(SQLNode);
-        console.log('SQLite Database Initialized (Node)');
+        console.log('[DB] Created new database (Node/Electron)');
         return db;
       } catch (nodeErr) {
-        console.warn('Node sql.js not available or failed to init, falling back to browser approach', nodeErr);
+        console.warn('[DB] Node environment failed, falling back to browser approach', nodeErr);
         // fall through to browser approach if possible
       }
     }
@@ -53,26 +53,28 @@ export const initDB = async () => {
     if (savedDb) {
       const uInt8Array = new Uint8Array(JSON.parse(savedDb));
       db = new SQL.Database(uInt8Array);
+      console.log('[DB] Loaded existing database from localStorage');
     } else {
       db = new SQL.Database();
-      initTables();
+      await initTables();
       // attempt to save to disk if possible
       try {
         await saveDBToDisk(SQL);
       } catch (e) {
         // ignore disk save errors in browser
       }
+      console.log('[DB] Created new database (Browser)');
     }
 
-    console.log('SQLite Database Initialized');
+    console.log('[DB] SQLite Database Initialization Complete');
     return db;
   } catch (err) {
-    console.error('Failed to init SQLite:', err);
+    console.error('[DB] Failed to initialize SQLite:', err);
     return null;
   }
 };
 
-const initTables = () => {
+const initTables = async () => {
   if (!db) return;
 
   // Create Users Table
@@ -109,31 +111,33 @@ const initTables = () => {
     );
   `);
   
-  saveDB(); // Call saveDB to persist the database after table creation
+  await saveDB(); // Call saveDB to persist the database after table creation
 };
 
-export const saveDB = () => {
+export const saveDB = async () => {
   if (!db) return;
   const data = db.export();
   const arr = Array.from(data);
+  
+  // Save to localStorage (browser)
   try {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(arr));
+      console.log('[DB] Data saved to localStorage');
     }
   } catch (e) {
-    // ignore localStorage errors
+    console.warn('[DB] Failed to save to localStorage:', (e as Error).message);
   }
 
-  // attempt to save to disk when possible (Node/Electron)
-  (async () => {
-    try {
-      const initSql = await import('sql.js').catch(() => null);
-      if (!initSql) return;
+  // Save to disk (Node/Electron)
+  try {
+    const initSql = await import('sql.js').catch(() => null);
+    if (initSql) {
       await saveDBToDisk(initSql as any);
-    } catch (err) {
-      // ignore disk save errors
     }
-  })();
+  } catch (err) {
+    console.warn('[DB] Failed to save to disk:', err);
+  }
 };
 
 export const getDB = () => db;
@@ -151,10 +155,11 @@ export const runQuery = (sql: string, params: any[] = []) => {
   return result;
 };
 
-export const executeRun = (sql: string, params: any[] = []) => {
+export const executeRun = async (sql: string, params: any[] = []) => {
   if (!db) return;
   db.run(sql, params);
-  saveDB();
+  await saveDB();
+  console.log('[DB] Executed and persisted:', sql.substring(0, 50) + '...');
 };
 
 // --- Disk helpers (Node/Electron) ---

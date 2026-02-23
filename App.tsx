@@ -74,7 +74,7 @@ function App() {
       // Save data automatically
       // Ensure user ID is attached if logged in
       const profileToSave = currentUser ? { ...userProfile, userId: currentUser.id } : userProfile;
-      saveSubmission(profileToSave, results);
+      await saveSubmission(profileToSave, results);
       
       setView('results');
     } catch (err) {
