@@ -25,7 +25,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onL
   const [newAdminForm, setNewAdminForm] = useState({ name: '', username: '', password: '' });
 
   useEffect(() => {
-    setSubmissions(getSubmissions());
+    (async () => {
+      const subs = await getSubmissions();
+      setSubmissions(subs);
+    })();
     if (currentUser.role === 'owner') {
       setAdminsList(getAllAdmins(currentUser));
     }

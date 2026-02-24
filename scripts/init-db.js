@@ -52,6 +52,14 @@ async function main(){
     const dir = path.resolve(process.cwd(), 'data');
     const filePath = path.join(dir, 'alara.sqlite');
     await fs.mkdir(dir, { recursive: true });
+
+    // if already exists, skip
+    const exists = await fs.stat(filePath).catch(() => null);
+    if (exists) {
+      console.log('Database file already exists, skipping creation:', filePath);
+      process.exit(0);
+    }
+
     await fs.writeFile(filePath, buffer);
 
     console.log('Created SQLite DB at', filePath);

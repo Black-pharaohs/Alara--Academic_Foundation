@@ -22,12 +22,13 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({ user, onBack, on
   const [msg, setMsg] = useState({ text: '', type: '' });
 
   useEffect(() => {
-    // Filter submissions for this student (matched by name/email in local storage simulation)
-    const all = getSubmissions();
-    const mySubmissions = all.filter(
-      s => (s.profile.userId === user.id) || (s.profile.email === user.username)
-    );
-    setHistory(mySubmissions);
+    (async () => {
+      const all = await getSubmissions();
+      const mySubmissions = all.filter(
+        s => (s.profile.userId === user.id) || (s.profile.email === user.username)
+      );
+      setHistory(mySubmissions);
+    })();
   }, [user]);
 
   // Reset form when entering edit mode or when user changes
