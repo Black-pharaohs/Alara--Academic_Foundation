@@ -9,6 +9,8 @@ const DB_FILE_NAME = 'alara.sqlite';
 
 const isNodeEnv = typeof window === 'undefined' || (typeof process !== 'undefined' && !!(process.versions && process.versions.node));
 
+const AUTO_SAVE_INTERVAL_MS = 1000 * 60 * 5; // every 5 minutes
+
 export const initDB = async () => {
   if (db) return db;
 
@@ -67,12 +69,17 @@ export const initDB = async () => {
     }
 
     console.log('[DB] SQLite Database Initialization Complete');
+
+    // start periodic auto-save if in Node/Electron or browser
+    scheduleAutoSave();
+
     return db;
   } catch (err) {
     console.error('[DB] Failed to initialize SQLite:', err);
     return null;
   }
 };
+
 
 const initTables = async () => {
   if (!db) return;
@@ -160,6 +167,21 @@ export const executeRun = async (sql: string, params: any[] = []) => {
   db.run(sql, params);
   await saveDB();
   console.log('[DB] Executed and persisted:', sql.substring(0, 50) + '...');
+};
+
+// --- Auto-save helpers ---
+const scheduleAutoSave = () => {
+  if (typeof window === 'undefined' || typeof localStorage !== 'undefined') {
+    // in both Node and browser we can call saveDB periodically
+    setInterval(async () => {
+      try {
+        console.log('[DB] running periodic auto-save');
+        await saveDB();
+      } catch (err) {
+        console.warn('[DB] auto-save failed:', err);
+      }
+    }, AUTO_SAVE_INTERVAL_MS);
+  }
 };
 
 // --- Disk helpers (Node/Electron) ---
