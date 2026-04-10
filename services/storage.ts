@@ -11,7 +11,7 @@ export interface Submission {
   matchScore: number;
 }
 
-export const saveSubmission = async (profile: UserProfile, recommendations: MajorRecommendation[]) => {
+export const saveSubmission = (profile: UserProfile, recommendations: MajorRecommendation[]) => {
   try {
     const id = Date.now().toString();
     const date = new Date().toISOString();
@@ -19,7 +19,7 @@ export const saveSubmission = async (profile: UserProfile, recommendations: Majo
     const matchScore = recommendations[0]?.matchScore || 0;
 
     // Use SQLite Insert
-    await executeRun(`
+    executeRun(`
       INSERT INTO submissions (
         id, user_id, date, student_name, email, phone, school_name, address,
         academic_strengths, interests, soft_skills, work_preference, env_preference,
@@ -43,10 +43,9 @@ export const saveSubmission = async (profile: UserProfile, recommendations: Majo
       matchScore
     ]);
 
-    console.log('✓ Submission saved successfully to SQLite');
+    console.log('Submission saved successfully to SQLite');
   } catch (error) {
-    console.error('✗ Failed to save submission:', error);
-    throw error;
+    console.error('Failed to save submission:', error);
   }
 };
 
@@ -79,12 +78,6 @@ export const getSubmissions = (): Submission[] => {
   }
 };
 
-export const clearSubmissions = async () => {
-  try {
-    await executeRun(`DELETE FROM submissions`);
-    console.log('✓ All submissions cleared');
-  } catch (error) {
-    console.error('✗ Failed to clear submissions:', error);
-    throw error;
-  }
+export const clearSubmissions = () => {
+  executeRun(`DELETE FROM submissions`);
 };

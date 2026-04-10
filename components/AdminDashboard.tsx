@@ -63,9 +63,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onL
     XLSX.writeFile(wb, `Masari_Students_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`);
   };
 
-  const handleDeleteAll = async () => {
+  const handleDeleteAll = () => {
     if (window.confirm('هل أنت متأكد من حذف جميع بيانات الطلاب؟ لا يمكن التراجع عن هذا الإجراء.')) {
-      await clearSubmissions();
+      clearSubmissions();
       setSubmissions([]);
       showMsg('تم حذف جميع السجلات بنجاح', 'success');
     }

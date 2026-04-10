@@ -1,28 +1,13 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { UserProfile, MajorRecommendation } from "../types";
 
-const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || "";
-
-if (!apiKey) {
-  console.warn("⚠️  تحذير: لم يتم العثور على GEMINI_API_KEY في متغيرات البيئة");
-}
-
-const ai = new GoogleGenAI({ apiKey });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const generateRecommendations = async (profile: UserProfile): Promise<MajorRecommendation[]> => {
-  // Validation
-  if (!apiKey) {
-    throw new Error("خطأ: لم يتم تكوين مفتاح API لـ Gemini. يرجى إضافة GEMINI_API_KEY في ملف .env");
-  }
-
-  if (!profile.name || !profile.academicStrengths.length) {
-    throw new Error("خطأ: يجب ملء جميع الحقول المطلوبة قبل الإرسال");
-  }
-
   const model = "gemini-2.5-flash";
 
   const systemInstruction = `
-    أنت مستشار أكاديمي خبير وموجه مهني. مهمتك هي تحليل ملف الطالب واقتراح أفضل 5 تخصصات جامعية مناسبة له.
+    أنت مستشار أكاديمي خبير وموجه مهني. مهمتك هي تحليل ملف الطالب واقتراح أفضل 3 تخصصات جامعية مناسبة له.
     قم بالتحليل بناءً على نقاط القوة الأكاديمية، والاهتمامات، والمهارات الشخصية، وتفضيلات بيئة العمل.
     يجب أن تكون التوصيات واقعية ومبنية على التوافق النفسي والعملي.
     قم بتوفير التفاصيل باللغة العربية الفصحى السهلة والمشجعة.
@@ -39,7 +24,7 @@ export const generateRecommendations = async (profile: UserProfile): Promise<Maj
     - بيئة العمل المفضلة: ${profile.environmentPreference}
     - المنطقة/العنوان: ${profile.address}
 
-    قدم 5 توصيات لتخصصات جامعية، واذكر أفضل الجامعات لدراستها.
+    قدم 3 توصيات لتخصصات جامعية، واذكر أفضل الجامعات لدراستها.
   `;
 
   try {
@@ -84,7 +69,7 @@ export const generateRecommendations = async (profile: UserProfile): Promise<Maj
                     type: { type: Type.STRING, description: "نوع الجامعة (حكومية/خاصة)" }
                   }
                 },
-                description: "قائمة بأفضل 5 جامعات لدراسة هذا التخصص في المنطقة"
+                description: "قائمة بأفضل 3 جامعات لدراسة هذا التخصص في المنطقة"
               }
             },
             required: ["id", "title", "matchScore", "description", "reasoning", "careerPaths", "requiredSkills", "curriculumHighlights", "topUniversities"]
@@ -93,30 +78,13 @@ export const generateRecommendations = async (profile: UserProfile): Promise<Maj
       }
     });
 
-    if (!response.text) {
-      throw new Error("لم يتم استلام بيانات صالحة من النموذج (response.text is empty)");
+    if (response.text) {
+      return JSON.parse(response.text) as MajorRecommendation[];
     }
-
-    const recommendations = JSON.parse(response.text) as MajorRecommendation[];
-    
-    if (!Array.isArray(recommendations) || recommendations.length === 0) {
-      throw new Error("لم يتم الحصول على توصيات صالحة من النموذج");
-    }
-
-    return recommendations;
-  } catch (error: any) {
+    throw new Error("لم يتم استلام بيانات صالحة من النموذج");
+  } catch (error) {
     console.error("Gemini API Error:", error);
-    
-    const errorMessage = error.message || "حدث خطأ غير متوقع أثناء معالجة البيانات";
-    
-    if (error.message?.includes("API key")) {
-      throw new Error("خطأ في مفتاح API. يرجى التحقق من صحة GEMINI_API_KEY");
-    }
-    
-    if (error.message?.includes("UNAUTHENTICATED")) {
-      throw new Error("فشل المصادقة. تأكد من أن مفتاح API صحيح وفعال");
-    }
-    
-    throw new Error(errorMessage);
+    // Fallback or re-throw
+    throw error;
   }
 };
