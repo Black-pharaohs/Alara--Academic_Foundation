@@ -72,9 +72,9 @@ function App() {
       setRecommendations(results);
       
       // Save data automatically
-      // Ensure user ID is attached if logged in
-      const profileToSave = currentUser ? { ...userProfile, userId: currentUser.id } : userProfile;
-      saveSubmission(profileToSave, results);
+      // Ensure user ID and role are attached if logged in
+      const profileToSave = currentUser ? { ...userProfile, userId: currentUser.id, userRole: currentUser.role } : userProfile;
+      await saveSubmission(profileToSave, results);
       
       setView('results');
     } catch (err) {

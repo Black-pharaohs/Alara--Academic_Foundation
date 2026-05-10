@@ -2,18 +2,17 @@
 import { AuthUser, UserRole } from '../types';
 import { executeRun, runQuery } from './db';
 
-// Initialize default owner if not exists
 const initAuth = () => {
   const users = runQuery(`SELECT * FROM users WHERE role = 'owner'`);
   if (users.length === 0) {
     executeRun(`
-      INSERT INTO users (id, username, password, name, role, created_at)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `, ['owner-1', 'admin', 'admin123', 'مدير النظام', 'owner', new Date().toISOString()]);
+      INSERT INTO users (username, password, name, role, created_at)
+      VALUES (?, ?, ?, ?, ?)
+    `, ['admin', '1123@Admin', 'مدير النظام', 'owner', new Date().toISOString()]);
   }
 };
 
-export const loginUser = (username: string, password: string): AuthUser | null => {
+export const loginUser = async (username: string, password: string): Promise<AuthUser | null> => {
   initAuth();
   const users = runQuery(`SELECT * FROM users WHERE username = ? AND password = ?`, [username, password]);
   
@@ -31,9 +30,9 @@ export const loginUser = (username: string, password: string): AuthUser | null =
   return null;
 };
 
-export const registerStudent = (data: { name: string; email: string; password: string; phone: string }) => {
+export const registerStudent = async (userData: { name: string; email: string; password: string; phone: string }): Promise<AuthUser> => {
   initAuth();
-  const existing = runQuery(`SELECT * FROM users WHERE username = ?`, [data.email]);
+  const existing = runQuery(`SELECT * FROM users WHERE username = ?`, [userData.email]);
   if (existing.length > 0) {
     throw new Error('البريد الإلكتروني مسجل مسبقاً');
   }
@@ -44,24 +43,24 @@ export const registerStudent = (data: { name: string; email: string; password: s
   executeRun(`
     INSERT INTO users (id, username, password, name, role, phone, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?)
-  `, [id, data.email, data.password, data.name, 'student', data.phone, createdAt]);
+  `, [id, userData.email, userData.password, userData.name, 'student', userData.phone, createdAt]);
 
   return {
     id,
-    username: data.email,
-    name: data.name,
+    username: userData.email,
+    name: userData.name,
     role: 'student' as UserRole,
     createdAt,
-    phone: data.phone
+    phone: userData.phone
   };
 };
 
-export const createAdmin = (currentAdmin: AuthUser, data: { username: string; password: string; name: string }) => {
+export const createAdmin = async (currentAdmin: AuthUser, userData: { username: string; password: string; name: string }): Promise<AuthUser> => {
   if (currentAdmin.role !== 'owner') {
     throw new Error('غير مصرح لك بإضافة مسؤولين');
   }
   
-  const existing = runQuery(`SELECT * FROM users WHERE username = ?`, [data.username]);
+  const existing = runQuery(`SELECT * FROM users WHERE username = ?`, [userData.username]);
   if (existing.length > 0) {
     throw new Error('اسم المستخدم مستخدم مسبقاً');
   }
@@ -72,18 +71,18 @@ export const createAdmin = (currentAdmin: AuthUser, data: { username: string; pa
   executeRun(`
     INSERT INTO users (id, username, password, name, role, created_at)
     VALUES (?, ?, ?, ?, ?, ?)
-  `, [id, data.username, data.password, data.name, 'admin', createdAt]);
+  `, [id, userData.username, userData.password, userData.name, 'admin', createdAt]);
 
   return {
     id,
-    username: data.username,
-    name: data.name,
+    username: userData.username,
+    name: userData.name,
     role: 'admin' as UserRole,
     createdAt
   };
 };
 
-export const updateProfile = (userId: string, data: { name?: string; password?: string; phone?: string }) => {
+export const updateProfile = async (userId: string, data: { name?: string; password?: string; phone?: string }): Promise<AuthUser> => {
   const existing = runQuery(`SELECT * FROM users WHERE id = ?`, [userId]);
   if (existing.length === 0) throw new Error('المستخدم غير موجود');
 
@@ -96,10 +95,12 @@ export const updateProfile = (userId: string, data: { name?: string; password?: 
   if (data.phone) { updates.push('phone = ?'); params.push(data.phone); }
 
   if (updates.length === 0) return {
-    ...existing[0],
+    id: existing[0].id,
+    name: existing[0].name,
     username: existing[0].username,
     role: existing[0].role as UserRole,
-    createdAt: existing[0].created_at
+    createdAt: existing[0].created_at,
+    phone: existing[0].phone
   };
 
   sql += updates.join(', ') + ` WHERE id = ?`;
@@ -118,7 +119,7 @@ export const updateProfile = (userId: string, data: { name?: string; password?: 
   };
 };
 
-export const getAllAdmins = (currentAdmin: AuthUser) => {
+export const getAllAdmins = async (currentAdmin: AuthUser): Promise<AuthUser[]> => {
   if (currentAdmin.role !== 'owner') return [];
   const rows = runQuery(`SELECT * FROM users WHERE role = 'admin'`);
   return rows.map((u: any) => ({

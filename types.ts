@@ -12,6 +12,7 @@ export interface AuthUser {
 
 export interface UserProfile {
   userId?: string; // Link to AuthUser if logged in
+  userRole?: UserRole; // Link to AuthUser role if logged in
   name: string;
   email: string;
   phone: string;
@@ -53,7 +54,7 @@ export interface AssessmentStepProps {
 export const ACADEMIC_SUBJECTS = [
   'الرياضيات', 'الفيزياء', 'الكيمياء', 'الأحياء', 
   'اللغة العربية', 'اللغة الإنجليزية', 'التاريخ', 
-  'الجغرافيا', 'علوم الحاسوب', 'الفنون'
+  'الجغرافيا', 'علوم الحاسوب', 'الفنون','العلوم الهندسية','الأدب الإنجليزي','الدراسات الإسلامية'
 ];
 
 export const INTERESTS = [

@@ -1,7 +1,4 @@
 
-// This service handles SQLite via sql.js in the browser
-// It persists the binary database to localStorage to simulate a persistent server DB
-
 let db: any = null;
 const DB_STORAGE_KEY = 'alara_sqlite_db_bin';
 
@@ -9,7 +6,7 @@ export const initDB = async () => {
   if (db) return db;
 
   try {
-    // @ts-ignore - sql.js is loaded via script tag
+    // @ts-expect-error - sql.js is loaded via script tag
     const SQL = await window.initSqlJs({
       locateFile: (file: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
     });
@@ -19,10 +16,17 @@ export const initDB = async () => {
     if (savedDb) {
       const uInt8Array = new Uint8Array(JSON.parse(savedDb));
       db = new SQL.Database(uInt8Array);
+      // Attempt to run ALTER TABLE to make sure older DBs have user_role
+      try {
+        db.run("ALTER TABLE submissions ADD COLUMN user_role TEXT;");
+      } catch {
+        // Ignore if column already exists
+      }
     } else {
       db = new SQL.Database();
-      initTables();
     }
+    
+    initTables();
     
     console.log("SQLite Database Initialized");
     return db;
@@ -65,7 +69,19 @@ const initTables = () => {
       work_preference TEXT,
       env_preference TEXT,
       top_major TEXT,
-      match_score INTEGER
+      match_score INTEGER,
+      user_role TEXT
+    );
+  `);
+
+  // Create Universities Table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS universities (
+      id TEXT PRIMARY KEY,
+      name TEXT,
+      location TEXT,
+      type TEXT,
+      recommended_majors_link TEXT
     );
   `);
   
@@ -99,3 +115,4 @@ export const executeRun = (sql: string, params: any[] = []) => {
   db.run(sql, params);
   saveDB();
 };
+

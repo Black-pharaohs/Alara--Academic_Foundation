@@ -7,7 +7,7 @@ export const generateRecommendations = async (profile: UserProfile): Promise<Maj
   const model = "gemini-2.5-flash";
 
   const systemInstruction = `
-    أنت مستشار أكاديمي خبير وموجه مهني. مهمتك هي تحليل ملف الطالب واقتراح أفضل 3 تخصصات جامعية مناسبة له.
+    أنت مستشار أكاديمي خبير وموجه مهني. مهمتك هي تحليل ملف الطالب واقتراح أفضل 10 تخصصات جامعية مناسبة له.
     قم بالتحليل بناءً على نقاط القوة الأكاديمية، والاهتمامات، والمهارات الشخصية، وتفضيلات بيئة العمل.
     يجب أن تكون التوصيات واقعية ومبنية على التوافق النفسي والعملي.
     قم بتوفير التفاصيل باللغة العربية الفصحى السهلة والمشجعة.
@@ -24,7 +24,7 @@ export const generateRecommendations = async (profile: UserProfile): Promise<Maj
     - بيئة العمل المفضلة: ${profile.environmentPreference}
     - المنطقة/العنوان: ${profile.address}
 
-    قدم 3 توصيات لتخصصات جامعية، واذكر أفضل الجامعات لدراستها.
+    قدم 5 توصيات لتخصصات جامعية، واذكر أفضل الجامعات لدراستها.
   `;
 
   try {
@@ -69,7 +69,7 @@ export const generateRecommendations = async (profile: UserProfile): Promise<Maj
                     type: { type: Type.STRING, description: "نوع الجامعة (حكومية/خاصة)" }
                   }
                 },
-                description: "قائمة بأفضل 3 جامعات لدراسة هذا التخصص في المنطقة"
+                description: "قائمة بأفضل 10 جامعات لدراسة هذا التخصص في المنطقة"
               }
             },
             required: ["id", "title", "matchScore", "description", "reasoning", "careerPaths", "requiredSkills", "curriculumHighlights", "topUniversities"]

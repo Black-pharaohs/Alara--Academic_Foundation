@@ -22,28 +22,31 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({ user, onBack, on
   const [msg, setMsg] = useState({ text: '', type: '' });
 
   useEffect(() => {
-    // Filter submissions for this student (matched by name/email in local storage simulation)
-    const all = getSubmissions();
-    const mySubmissions = all.filter(
-      s => (s.profile.userId === user.id) || (s.profile.email === user.username)
-    );
-    setHistory(mySubmissions);
+    // Filter submissions for this student
+    const fetchSubmissions = async () => {
+      const all = await getSubmissions();
+      const mySubmissions = all.filter(
+        s => (s.profile.userId === user.id) || (s.profile.email === user.username)
+      );
+      setHistory(mySubmissions);
+    };
+    fetchSubmissions();
   }, [user]);
 
-  // Reset form when entering edit mode or when user changes
-  useEffect(() => {
+  const handleEditClick = () => {
     setFormData({
       name: user.name,
       phone: user.phone || '',
       password: ''
     });
     setMsg({ text: '', type: '' });
-  }, [user, isEditing]);
+    setIsEditing(true);
+  };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const updatedUser = updateProfile(user.id, {
+      const updatedUser = await updateProfile(user.id, {
         name: formData.name,
         phone: formData.phone,
         password: formData.password || undefined
@@ -83,7 +86,14 @@ export const StudentProfile: React.FC<StudentProfileProps> = ({ user, onBack, on
           </div>
           <div className="absolute top-4 left-4">
              <button 
-                onClick={() => setIsEditing(!isEditing)}
+                onClick={() => {
+                  if (isEditing) {
+                    setIsEditing(false);
+                    setMsg({ text: '', type: '' });
+                  } else {
+                    handleEditClick();
+                  }
+                }}
                 className="flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-colors"
              >
                 {isEditing ? (

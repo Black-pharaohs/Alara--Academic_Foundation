@@ -11,7 +11,7 @@ export interface Submission {
   matchScore: number;
 }
 
-export const saveSubmission = (profile: UserProfile, recommendations: MajorRecommendation[]) => {
+export const saveSubmission = async (profile: UserProfile, recommendations: MajorRecommendation[]) => {
   try {
     const id = Date.now().toString();
     const date = new Date().toISOString();
@@ -23,8 +23,8 @@ export const saveSubmission = (profile: UserProfile, recommendations: MajorRecom
       INSERT INTO submissions (
         id, user_id, date, student_name, email, phone, school_name, address,
         academic_strengths, interests, soft_skills, work_preference, env_preference,
-        top_major, match_score
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        top_major, match_score, user_role
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       id,
       profile.userId || null,
@@ -40,7 +40,8 @@ export const saveSubmission = (profile: UserProfile, recommendations: MajorRecom
       profile.workPreference,
       profile.environmentPreference,
       topMajor,
-      matchScore
+      matchScore,
+      profile.userRole || null
     ]);
 
     console.log('Submission saved successfully to SQLite');
@@ -49,7 +50,7 @@ export const saveSubmission = (profile: UserProfile, recommendations: MajorRecom
   }
 };
 
-export const getSubmissions = (): Submission[] => {
+export const getSubmissions = async (): Promise<Submission[]> => {
   try {
     const rows = runQuery(`SELECT * FROM submissions ORDER BY date DESC`);
     
@@ -60,6 +61,7 @@ export const getSubmissions = (): Submission[] => {
       matchScore: row.match_score,
       profile: {
         userId: row.user_id,
+        userRole: row.user_role,
         name: row.student_name,
         email: row.email,
         phone: row.phone,
@@ -78,6 +80,7 @@ export const getSubmissions = (): Submission[] => {
   }
 };
 
-export const clearSubmissions = () => {
+export const clearSubmissions = async () => {
   executeRun(`DELETE FROM submissions`);
 };
+

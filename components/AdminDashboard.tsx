@@ -25,10 +25,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onL
   const [newAdminForm, setNewAdminForm] = useState({ name: '', username: '', password: '' });
 
   useEffect(() => {
-    setSubmissions(getSubmissions());
-    if (currentUser.role === 'owner') {
-      setAdminsList(getAllAdmins(currentUser));
-    }
+    const fetchData = async () => {
+      setSubmissions(await getSubmissions());
+      if (currentUser.role === 'owner') {
+        setAdminsList(await getAllAdmins(currentUser));
+      }
+    };
+    fetchData();
   }, [currentUser]);
 
   const showMsg = (text: string, type: 'success' | 'error') => {
@@ -63,18 +66,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onL
     XLSX.writeFile(wb, `Masari_Students_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`);
   };
 
-  const handleDeleteAll = () => {
+  const handleDeleteAll = async () => {
     if (window.confirm('هل أنت متأكد من حذف جميع بيانات الطلاب؟ لا يمكن التراجع عن هذا الإجراء.')) {
-      clearSubmissions();
+      await clearSubmissions();
       setSubmissions([]);
       showMsg('تم حذف جميع السجلات بنجاح', 'success');
     }
   };
 
-  const handleUpdateProfile = (e: React.FormEvent) => {
+  const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      updateProfile(currentUser.id, {
+      await updateProfile(currentUser.id, {
         name: profileForm.name,
         password: profileForm.password || undefined
       });
@@ -85,11 +88,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onL
     }
   };
 
-  const handleAddAdmin = (e: React.FormEvent) => {
+  const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      createAdmin(currentUser, newAdminForm);
-      setAdminsList(getAllAdmins(currentUser));
+      await createAdmin(currentUser, newAdminForm);
+      setAdminsList(await getAllAdmins(currentUser));
       setNewAdminForm({ name: '', username: '', password: '' });
       showMsg('تم إضافة المسؤول الجديد بنجاح', 'success');
     } catch (err: any) {

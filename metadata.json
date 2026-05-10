@@ -1,5 +1,6 @@
 {
   "name": "Alara - Academic Foundation",
   "description": "Alara: An AI-powered platform helping students establish their cognitive and academic path, inspired by the founder of the Napata Kingdom.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": []
 }

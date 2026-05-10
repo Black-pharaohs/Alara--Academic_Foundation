@@ -20,23 +20,27 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }
 
   if (!isOpen) return null;
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    const user = loginUser(loginData.username, loginData.password);
-    if (user) {
-      onLogin(user);
-      onClose();
-    } else {
-      setError('اسم المستخدم أو كلمة المرور غير صحيحة');
-    }
-  };
-
-  const handleRegister = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     try {
-      const user = registerStudent(regData);
+      const user = await loginUser(loginData.username, loginData.password);
+      if (user) {
+        onLogin(user);
+        onClose();
+      } else {
+        setError('اسم المستخدم أو كلمة المرور غير صحيحة');
+      }
+    } catch (err: any) {
+      setError(err.message || 'حدث خطأ أثناء تسجيل الدخول');
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    try {
+      const user = await registerStudent(regData);
       onLogin(user as AuthUser);
       onClose();
     } catch (err: any) {
